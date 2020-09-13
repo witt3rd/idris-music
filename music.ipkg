@@ -1,0 +1,12 @@
+package music
+
+sourcedir = .
+
+modules =
+  Main
+
+main = Main
+
+executable = "music"
+
+pkgs = effects
