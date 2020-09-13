@@ -29,9 +29,6 @@ Semitone = Int
 MidiNote : Type
 MidiNote = Int
 
-BPM : Type
-BPM = Double
-
 {- Constants -}
 
 sampleRate : Hz
@@ -46,49 +43,11 @@ a440 = 440.0
 midiA4 : Int
 midiA4 = 69
 
-tempo : BPM
-tempo = 104.0
-
 outFilePath : String
 outFilePath = "wave.bin"
 
 playCommand : String
 playCommand = printf "ffplay -showmode 1 -f f64le -ar %f %s" sampleRate outFilePath
-
-{- Derived Constants -}
-
-quarterNote : Seconds
-quarterNote = 60.0 / tempo
-
-halfNote : Seconds
-halfNote = quarterNote * 2.0
-
-wholeNote : Seconds
-wholeNote = halfNote * 2.0
-
-eigthNote : Seconds
-eigthNote = quarterNote * 0.5
-
-sixteenthNote : Seconds
-sixteenthNote = eigthNote * 0.5
-
-dottedQuarterNote : Seconds
-dottedQuarterNote = quarterNote + eigthNote
-
-dottedEigthNote : Seconds
-dottedEigthNote = eigthNote + sixteenthNote
-
-dottedSixteenthNote : Seconds
-dottedSixteenthNote = sixteenthNote + (sixteenthNote * 0.5)
-
-tripletQuarterNote : Seconds
-tripletQuarterNote = quarterNote - (quarterNote * (1/3))
-
-tripletEigthNote : Seconds
-tripletEigthNote = eigthNote - (eigthNote * (1/3))
-
-tripletSixteenthNote : Seconds
-tripletSixteenthNote = sixteenthNote - (sixteenthNote * (1/3))
 
 {- Data types -}
 
@@ -106,20 +65,11 @@ Show Event where
 
 sequence : List Event
 sequence = [
-  MkEvent 67 0.5 eigthNote,
-  MkEvent  0 0.0 eigthNote,
-  MkEvent 67 0.5 eigthNote,
-  MkEvent  0 0.0 eigthNote,
-  MkEvent 67 0.5 eigthNote,
-  MkEvent  0 0.0 eigthNote,
-  MkEvent 63 0.5 dottedEigthNote,
-  MkEvent 70 0.5 sixteenthNote,
-  MkEvent 67 0.5 eigthNote,
-  MkEvent  0 0.0 eigthNote,
-  MkEvent 63 0.5 dottedEigthNote,
-  MkEvent 70 0.5 sixteenthNote,
-  MkEvent 67 0.5 quarterNote,
-  MkEvent  0 0.0 quarterNote
+  MkEvent 69 0.5 0.5,
+  MkEvent 0 0.5 0.5,
+  MkEvent 70 0.5 0.5,
+  MkEvent 67 0.5 0.5,
+  MkEvent 71 0.5 0.5
 ]
 
 {- Helpers -}
