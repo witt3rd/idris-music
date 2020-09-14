@@ -106,18 +106,36 @@ Show Event where
 
 sequence : List Event
 sequence = [
+  {- Bar 1 -}
   MkEvent 67 0.5 eigthNote,
   MkEvent  0 0.0 eigthNote,
   MkEvent 67 0.5 eigthNote,
   MkEvent  0 0.0 eigthNote,
   MkEvent 67 0.5 eigthNote,
   MkEvent  0 0.0 eigthNote,
-  MkEvent 63 0.5 dottedEigthNote,
-  MkEvent 70 0.5 sixteenthNote,
+  MkEvent 63 0.3 dottedEigthNote,
+  MkEvent 70 0.6 sixteenthNote,
+  {- Bar 2 -}
   MkEvent 67 0.5 eigthNote,
   MkEvent  0 0.0 eigthNote,
-  MkEvent 63 0.5 dottedEigthNote,
-  MkEvent 70 0.5 sixteenthNote,
+  MkEvent 63 0.3 dottedEigthNote,
+  MkEvent 70 0.6 sixteenthNote,
+  MkEvent 67 0.5 quarterNote,
+  MkEvent  0 0.0 quarterNote,
+  {- Bar 3 -}
+  MkEvent 74 0.2 eigthNote,
+  MkEvent  0 0.0 eigthNote,
+  MkEvent 74 0.2 eigthNote,
+  MkEvent  0 0.0 eigthNote,
+  MkEvent 74 0.2 eigthNote,
+  MkEvent  0 0.0 eigthNote,
+  MkEvent 75 0.7 dottedEigthNote,
+  MkEvent 70 0.6 sixteenthNote,
+  {- Bar 4 -}
+  MkEvent 66 0.5 eigthNote,
+  MkEvent  0 0.0 eigthNote,
+  MkEvent 63 0.7 dottedEigthNote,
+  MkEvent 70 0.6 sixteenthNote,
   MkEvent 67 0.5 quarterNote,
   MkEvent  0 0.0 quarterNote
 ]
@@ -147,6 +165,8 @@ durationSize duration = (durationSamples duration) * sampleSize
 calcDuration : List Event -> Seconds
 calcDuration [] = 0.0
 calcDuration ((MkEvent _ _ duration) :: xs) = duration + calcDuration xs
+
+{- Major functions -}
 
 -- fill a buffer with PCM data for a note event
 wave : Buffer -> (start : Seconds) -> Event -> IO ()
@@ -202,6 +222,7 @@ saveBuffer buf filePath =
     newBuf <- writeBufferToFile file buf size
     pure (Right newBuf)
 
+{- Main -}
 
 main : IO ()
 main = do
