@@ -43,17 +43,11 @@ sampleSize = 8
 a440 : Hz
 a440 = 440.0
 
-midiA4 : MidiNote
+midiA4 : Int
 midiA4 = 69
 
 tempo : BPM
 tempo = 104.0
-
-attack : Seconds
-attack = 0.01
-
-decay : Seconds
-decay = 0.05
 
 outFilePath : String
 outFilePath = "wave.bin"
@@ -100,22 +94,22 @@ tripletSixteenthNote = sixteenthNote - (sixteenthNote * (1/3))
 
 record Event where
   constructor MkEvent
-  note  : MidiNote
+  midiNote  : MidiNote
   volume    : Volume
   duration  : Seconds
 
 Show Event where
-  show (MkEvent note volume duration) =
-    printf "Note: %d Vol: %f Dur: %f" note volume duration
+  show (MkEvent midiNote volume duration) =
+    printf "Note: %d Vol: %f Dur: %f" midiNote volume duration
 
 {- Data -}
 
 sequence : List Event
 sequence = [
   {- Bar 1 -}
-  MkEvent 67 0.7 eigthNote,
+  MkEvent 67 0.5 eigthNote,
   MkEvent  0 0.0 eigthNote,
-  MkEvent 67 0.6 eigthNote,
+  MkEvent 67 0.5 eigthNote,
   MkEvent  0 0.0 eigthNote,
   MkEvent 67 0.5 eigthNote,
   MkEvent  0 0.0 eigthNote,
@@ -129,7 +123,7 @@ sequence = [
   MkEvent 67 0.5 quarterNote,
   MkEvent  0 0.0 quarterNote,
   {- Bar 3 -}
-  MkEvent 74 0.3 eigthNote,
+  MkEvent 74 0.2 eigthNote,
   MkEvent  0 0.0 eigthNote,
   MkEvent 74 0.2 eigthNote,
   MkEvent  0 0.0 eigthNote,
@@ -172,27 +166,11 @@ calcDuration : List Event -> Seconds
 calcDuration [] = 0.0
 calcDuration ((MkEvent _ _ duration) :: xs) = duration + calcDuration xs
 
--- calculate the amount of volume [0.0, 1.0] (or inverted [1.0, 0.0] between
--- beginning and end samples based on the current sample.  if cur is not between
--- beg and end, then it will be 1.0.
-clampedRamp : (beg : Samples) ->
-              (end : Samples) ->
-              (cur : Samples) ->
-              (inv : Bool) ->
-              Volume
-clampedRamp beg end cur inv =
-  if cur < beg || cur > end
-  then 1.0
-  else let x : Double = cast (end - cur)
-           y : Double = cast (end - beg)
-           z : Double = x / y in
-    if inv then 1.0 - z else z
-
 {- Major functions -}
 
 -- fill a buffer with PCM data for a note event
 wave : Buffer -> (start : Seconds) -> Event -> IO ()
-wave buf start event@(MkEvent note volume duration) =
+wave buf start event@(MkEvent midiNote volume duration) =
   do
 
     putStrLn $ printf "Rendering @ %f: %s" start (show event)
@@ -205,20 +183,11 @@ wave buf start event@(MkEvent note volume duration) =
     sampleCount : Samples
     sampleCount = durationSamples duration
 
-    attackSampleCount : Samples
-    attackSampleCount = durationSamples attack
-
-    decaySampleCount : Samples
-    decaySampleCount = durationSamples decay
-
-    decaySampleStart : Samples
-    decaySampleStart = sampleCount - decaySampleCount
-
     offset : Bytes
     offset = durationSize start
 
     pitch : Hz
-    pitch = midiFrequency note
+    pitch = midiFrequency midiNote
 
     step : Double
     step = (pitch * 2.0 * pi) / sampleRate
@@ -229,19 +198,16 @@ wave buf start event@(MkEvent note volume duration) =
     makeWave 0 buf = pure ()
     makeWave cur buf =
       do
-        let delta : Int = sampleCount - cur
-        let attackAmt : Volume = clampedRamp 0 attackSampleCount delta True
-        let decayAmt : Volume = clampedRamp decaySampleStart sampleCount delta False
-        let mix : Volume = volume * attackAmt * decayAmt
-        let sample : Double = ((* mix) . sin . (* step) . cast) delta
-        let loc : Int = offset + (delta * sampleSize)
+        let delta  : Int = sampleCount - cur
+        let sample : Double = ((* volume) . sin . (* step) . cast) delta
+        let loc    : Int = offset + (delta * sampleSize)
         setDouble buf loc sample
         makeWave (assert_smaller cur (cur - 1)) buf
 
 -- render the sequence of note events into the buffer at the start time
 render : List Event -> Buffer -> (start : Seconds) -> IO ()
 render [] buf _ = pure ()
-render (event@(MkEvent note volume duration) :: xs) buf start =
+render (event@(MkEvent midiNote volume duration) :: xs) buf start =
   do
     wave buf start event
     render xs buf (start + duration)
