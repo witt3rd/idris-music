@@ -100,9 +100,9 @@ tripletSixteenthNote = sixteenthNote - (sixteenthNote * (1/3))
 
 record Event where
   constructor MkEvent
-  note  : MidiNote
-  volume    : Volume
-  duration  : Seconds
+  note : MidiNote
+  volume : Volume
+  duration : Seconds
 
 Show Event where
   show (MkEvent note volume duration) =
@@ -241,7 +241,7 @@ wave buf start event@(MkEvent note volume duration) =
 -- render the sequence of note events into the buffer at the start time
 render : List Event -> Buffer -> (start : Seconds) -> IO ()
 render [] buf _ = pure ()
-render (event@(MkEvent note volume duration) :: xs) buf start =
+render (event@(MkEvent _ _ duration) :: xs) buf start =
   do
     wave buf start event
     render xs buf (start + duration)
